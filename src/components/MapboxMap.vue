@@ -1,30 +1,28 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import mapboxgl from 'mapbox-gl'
+import { ref, onMounted } from 'vue';
+import { useMap } from '../composables/useMap.ts'
 
-const mapContainer = ref<HTMLDivElement | null>(null)
-const map = ref<mapboxgl.Map | null>(null)
+const mapContainer = ref<HTMLElement | null>(null)
+const { initialize } = useMap()
 
-onMounted(() => {
-  if (!mapContainer.value) return
-
-  mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
-
-  map.value = new mapboxgl.Map({
-    container: mapContainer.value,
-    style: 'mapbox://styles/mapbox/standard',
-    center: [37.6173, 55.7558],
-    zoom: 10
-  });
-})
-
-onUnmounted(() => {
-  map.value?.remove()
+onMounted(async () => {
+  if (mapContainer.value) {
+    try {
+      await initialize({
+        container: mapContainer.value,
+        style: 'mapbox://styles/mapbox/light-v10',
+        center: [37.6173, 55.7558],
+        zoom: 12
+      })
+    } catch (error) {
+      console.error('Не удалось инициализировать карту:', error)
+    }
+  }
 })
 </script>
 
 <template>
-  <div ref="mapContainer" class="map-container" />
+  <div ref="mapContainer" id="#map" class="map-container" />
 </template>
 
 <style scoped>
