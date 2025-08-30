@@ -1,51 +1,44 @@
-import type { MapboxOptions, ErrorEvent } from 'mapbox-gl'
+import { ref } from 'vue'
 import MapboxService from '../services/MapboxService.ts';
+
+import type { Ref } from 'vue'
+import type { MapboxOptions, ErrorEvent } from 'mapbox-gl'
 import type { EventCallback } from '../interfaces/Map.ts';
 
 interface SingletonMapState {
-  map: MapboxService | null
-  initialize: (options?: MapboxOptions) => Promise<MapboxService>
-  getMap: () => MapboxService | null
+  map: Ref<MapboxService | null>
+  initialize: (options?: MapboxOptions) => Promise<void>
 }
 
-let globalMap: MapboxService | null = null
+const globalMap = ref<MapboxService | null>(null)
 
 export function useMap(): SingletonMapState {
-  const initialize = async (options: MapboxOptions = { container: '#map' }): Promise<MapboxService> => {
-    if (globalMap) {
-      return globalMap
-    }
+  const initialize = async (options: MapboxOptions = { container: '#map' }): Promise<void> => {
+    if (!globalMap.value) {
+      try {
+        globalMap.value = new MapboxService(options);
 
-    try {
-      globalMap = new MapboxService(options);
+        await new Promise<void>((resolve, reject) => {
+          globalMap.value!.on('load', () => {
+            resolve()
+          })
 
-      await new Promise<void>((resolve, reject) => {
-        globalMap!.on('load', () => {
-          resolve()
+          const errorCallback: EventCallback<ErrorEvent> = (error) => {
+            reject(error.error);
+          };
+
+          globalMap.value!.on('error', errorCallback)
         })
+      } catch (error) {
+        console.error('Ошибка при инициализции карты')
 
-        const errorCallback: EventCallback<ErrorEvent> = (error) => {
-          reject(error.error);
-        };
-
-        globalMap!.on('error', errorCallback)
-      })
-
-      return globalMap
-    } catch (error) {
-      console.error('Ошибка при инициализции карты')
-
-      throw error;
+        throw error;
+      }
     }
-  }
-
-  const getMap = (): MapboxService | null => {
-    return globalMap
   }
 
   return {
     map: globalMap,
     initialize,
-    getMap,
-  }
+  } as SingletonMapState
 }

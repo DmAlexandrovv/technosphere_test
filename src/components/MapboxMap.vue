@@ -2,8 +2,10 @@
 import { ref, onMounted } from 'vue';
 import { useMap } from '../composables/useMap.ts'
 
+import type { MapMouseEvent } from 'mapbox-gl'
+
 const mapContainer = ref<HTMLElement | null>(null)
-const { initialize } = useMap()
+const { initialize, map } = useMap()
 
 onMounted(async () => {
   if (mapContainer.value) {
@@ -18,7 +20,15 @@ onMounted(async () => {
       console.error('Не удалось инициализировать карту:', error)
     }
   }
-})
+
+  if (map.value) {
+    map.value.on('click', (e: MapMouseEvent) => {
+      if (map.value) {
+        map.value.addPoint(e);
+      }
+    })
+  }
+});
 </script>
 
 <template>
