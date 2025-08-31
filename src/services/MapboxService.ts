@@ -8,6 +8,9 @@ import {
   RAW_TEMP_LAYERS,
   RAW_SOURCES,
   RAW_LAYERS,
+  SPREAD_HIGHLIGHT_SOURCE_ID,
+  SPREAD_HIGHLIGHT_LAYER,
+  SPREAD_HIGHLIGHT_SOURCE,
 } from '../const';
 import type { SegmentGeometry, SpreadGeometry } from '../interfaces/Segment.ts'
 
@@ -43,6 +46,38 @@ export default class MapboxService implements MapServiceInterface {
     [...RAW_TEMP_LAYERS, ...RAW_LAYERS].forEach((layer) => {
       this._map.addLayer(layer)
     })
+
+    this._map.addSource(SPREAD_HIGHLIGHT_SOURCE_ID, SPREAD_HIGHLIGHT_SOURCE)
+
+    this._map.addLayer(SPREAD_HIGHLIGHT_LAYER)
+  }
+
+  public highlightSegment(spreadGeometry: SpreadGeometry) {
+    this.removeHighlightSegment()
+
+    const highlightSource = this._map.getSource(SPREAD_HIGHLIGHT_SOURCE_ID) as GeoJSONSource;
+
+    if (highlightSource) {
+      highlightSource.setData({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          properties: {},
+          geometry: spreadGeometry
+        }]
+      });
+    }
+  }
+
+  public removeHighlightSegment() {
+    const highlightSource = this._map.getSource(SPREAD_HIGHLIGHT_SOURCE_ID) as GeoJSONSource;
+
+    if (highlightSource) {
+      highlightSource.setData({
+        type: 'FeatureCollection',
+        features: []
+      });
+    }
   }
 
   public cleanupDrawing(segmentSourceId: string, spreadSourceId: string): void {

@@ -10,6 +10,9 @@ export const SEGMENT_SOURCE_ID = 'segment-source'
 export const SPREAD_LAYER_ID = 'segment-spread-layer'
 export const SPREAD_SOURCE_ID = 'spread-source'
 
+export const SPREAD_HIGHLIGHT_LAYER_ID = 'spread-highlight-layer'
+export const SPREAD_HIGHLIGHT_SOURCE_ID = 'spread-highlight-source'
+
 export const RAW_TEMP_SOURCES: Array<{ id: string, data: AnySourceData }> = [
   {
     id: SEGMENT_TEMP_SOURCE_ID,
@@ -100,3 +103,22 @@ export const RAW_LAYERS: AnyLayer[] = [
     }
   }
 ]
+
+export const SPREAD_HIGHLIGHT_LAYER: AnyLayer = {
+  id: SPREAD_HIGHLIGHT_LAYER_ID,
+  type: 'fill',
+  source: SPREAD_HIGHLIGHT_SOURCE_ID,
+  paint: {
+    'fill-color': '#FFFF00',
+    'fill-opacity': 0.25,
+    'fill-outline-color': '#1976d2'
+  }
+};
+
+export const SPREAD_HIGHLIGHT_SOURCE: AnySourceData = {
+  type: 'geojson',
+  data: {
+    type: 'FeatureCollection',
+    features: []
+  }
+};

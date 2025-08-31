@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useMap } from '../composables/useMap.ts'
+import {onMounted, ref} from 'vue';
+import {useMap} from '../composables/useMap.ts'
 
-import type { MapMouseEvent } from 'mapbox-gl';
-import type { Segment, SegmentGeometry, SpreadGeometry } from '../interfaces/Segment.ts'
+import type {MapMouseEvent} from 'mapbox-gl';
+import type {Segment, SegmentGeometry, SpreadGeometry} from '../interfaces/Segment.ts'
 
-import { SEGMENT_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID } from '../const';
-import { calculateArcPoints, calculateAzimuth, calculateEndpoint } from '../utils';
+import {SEGMENT_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID} from '../const';
+import {calculateArcPoints, calculateAzimuth, calculateEndpoint} from '../utils';
 
 import SegmentTool from './SegmentTool.vue'
 import SegmentEditor from './SegmentEditor.vue';
@@ -44,6 +44,10 @@ onMounted(async () => {
           if (currentId) {
             selectedSegment.value = segments.value.find(({ id }) => id === currentId) || null
           }
+
+          if (selectedSegment.value) {
+            map.value?.highlightSegment(calcSpreadGeometry(selectedSegment.value))
+          }
         });
       })
     } catch (error) {
@@ -51,6 +55,23 @@ onMounted(async () => {
     }
   }
 });
+
+const calcSpreadGeometry = (segment: Segment): SpreadGeometry => {
+  const baseAzimuth = calculateAzimuth(segment.startPoint, segment.azimuthPoint)
+  const spreadAngle = Math.abs(segment.spread)
+  const startAngle = baseAzimuth - spreadAngle
+  const endAngle = baseAzimuth + spreadAngle
+  const arcPoints = calculateArcPoints(segment.startPoint, segment.distance, startAngle, endAngle)
+  const allPoints = [segment.startPoint, ...arcPoints, segment.startPoint]
+
+  return {
+    type: 'Polygon',
+    coordinates: [allPoints],
+    properties: {
+      id: segment.id
+    },
+  }
+}
 
 const rerenderLayer = () => {
   const { segmentGeometry, spreadGeometry } = segments.value
@@ -60,21 +81,7 @@ const rerenderLayer = () => {
         type: 'LineString',
         coordinates: [segment.startPoint, endPoint],
       };
-
-      const baseAzimuth = calculateAzimuth(segment.startPoint, segment.azimuthPoint);
-      const spreadAngle = Math.abs(segment.spread);
-      const startAngle = baseAzimuth - spreadAngle;
-      const endAngle = baseAzimuth + spreadAngle;
-      const arcPoints = calculateArcPoints(segment.startPoint, segment.distance, startAngle, endAngle);
-      const allPoints = [segment.startPoint, ...arcPoints, segment.startPoint];
-
-      const spreadGeometry: SpreadGeometry = {
-        type: 'Polygon',
-        coordinates: [allPoints],
-        properties: {
-          id: segment.id
-        },
-      };
+      const spreadGeometry: SpreadGeometry = calcSpreadGeometry(segment)
 
       return {
         segmentGeometry: [...acc.segmentGeometry, segmentGeometry],
@@ -100,7 +107,15 @@ const handleDeleteSegment = () => {
   segments.value = segments.value.filter(({ id }) => id !== selectedSegment.value?.id)
   selectedSegment.value = null
 
+  map.value?.removeHighlightSegment()
+
   rerenderLayer()
+}
+
+const handleCloseInfo = () => {
+  selectedSegment.value = null
+
+  map.value?.removeHighlightSegment()
 }
 </script>
 
@@ -112,7 +127,7 @@ const handleDeleteSegment = () => {
     v-if="selectedSegment"
     :segment="selectedSegment"
     @delete="handleDeleteSegment"
-    @close="selectedSegment = null"
+    @close="handleCloseInfo"
   />
 </template>
 
