@@ -1,16 +1,12 @@
 import mapboxgl from 'mapbox-gl'
 
-import PointService from './PointService.ts';
-
-import { POINT_LAYER_ID, POINT_SOURCE_ID } from '../const'
-
-import type { MapboxOptions, MapMouseEvent, Map, GeoJSONSource } from 'mapbox-gl'
+import type { MapboxOptions, Map, AnyLayer, Source, AnySourceData } from 'mapbox-gl'
 import type { MapServiceInterface, EventCallback } from '../interfaces/Map.ts'
-import type  { PointServiceInterface } from '../interfaces/Point'
+
+import { SEGMENT_TEMP_LAYER_ID, SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_LAYER_ID, SPREAD_TEMP_SOURCE_ID } from '../const';
 
 export default class MapboxService implements MapServiceInterface {
-  private readonly _map: Map | null = null
-  private _pointService: PointServiceInterface | null = null
+  private readonly _map: Map
 
   constructor(options: MapboxOptions = { container: '#map' }) {
     try {
@@ -24,21 +20,17 @@ export default class MapboxService implements MapServiceInterface {
       });
 
       this._map.on('load', () => {
-        this._initializeSourcesAndLayers()
+        this._initializeSourcesAndLayers();
       })
-
-      this._pointService = new PointService()
     } catch (error) {
       console.error('Не удалось создать экземпляр mapbox-gl')
 
-      throw error;
+      throw error
     }
   }
 
   private _initializeSourcesAndLayers(): void {
-    if (!this._map) return
-
-    this._map.addSource(POINT_SOURCE_ID, {
+    this._map.addSource(SEGMENT_TEMP_SOURCE_ID, {
       type: 'geojson',
       data: {
         type: 'FeatureCollection',
@@ -47,58 +39,80 @@ export default class MapboxService implements MapServiceInterface {
     })
 
     this._map.addLayer({
-      id: POINT_LAYER_ID,
-      source: POINT_SOURCE_ID,
-      type: 'circle',
+      id: SEGMENT_TEMP_LAYER_ID,
+      type: 'line',
+      source: SEGMENT_TEMP_SOURCE_ID,
       paint: {
-        'circle-radius': ['get', 'radius'],
-        'circle-color': ['get', 'color'],
-        'circle-stroke-color': '#FFF',
+        'line-color': '#ff0000',
+        'line-width': 3,
+        'line-dasharray': [2, 2]
       }
     })
 
-    this._updatePointsData()
-  }
-
-  private _updatePointsData(): void {
-    if (!this._map || !this._map.getSource(POINT_SOURCE_ID) || !this._pointService) return
-
-    const features = this._pointService.points.map(point => ({
-      type: 'Feature' as const,
-      geometry: {
-        type: 'Point' as const,
-        coordinates: point.lngLat
-      },
-      properties: {
-        id: point.id,
-        color: point.color,
-        radius: point.radius,
+    this._map.addSource(SPREAD_TEMP_SOURCE_ID, {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: []
       }
-    }))
+    })
 
-    const source = this._map.getSource('points-source') as GeoJSONSource
-
-    source.setData({
-      type: 'FeatureCollection',
-      features
+    this._map.addLayer({
+      id: SPREAD_TEMP_LAYER_ID,
+      type: 'fill',
+      source: SPREAD_TEMP_SOURCE_ID,
+      paint: {
+        'fill-color': '#ff0000',
+        'fill-opacity': 0.2
+      }
     })
   }
 
-  public get map(): Map | null {
-    return this._map;
+  public get map(): Map {
+    return this._map
   }
 
   on<T>(event: string, callback: EventCallback<T>): void {
-    this._map!.on(event, callback);
+    this._map!.on(event, callback)
   }
 
-  addPoint(e: MapMouseEvent): void {
-    if (!this._map) {
-      return
-    }
+  off<T>(event: string, callback: EventCallback<T>): void {
+    this._map!.on(event, callback)
+  }
 
-    this._pointService?.createPoint([e.lngLat.lng, e.lngLat.lat])
+  setCanvasStyle(styles: Record<string, string | number>): void {
+    Object.assign(this._map.getCanvas().style, styles)
+  }
 
-    this._updatePointsData()
+  getLayer(id: string): AnyLayer | undefined {
+    return this._map.getLayer(id)
+  }
+
+  removeLayer(id: string): Map {
+    return this._map.removeLayer(id)
+  }
+
+  getSource(id: string): Source | undefined {
+    return this._map.getSource(id)
+  }
+
+  removeSource(id: string): Map {
+    return this._map.removeSource(id)
+  }
+
+  addSource(id: string, source: AnySourceData): Map {
+    return this._map.addSource(id, source)
+  }
+
+  addLayer(layer: AnyLayer, before?: string): Map {
+    return this._map.addLayer(layer, before)
+  }
+
+  isStyleLoaded(): boolean {
+    return this._map.isStyleLoaded()
+  }
+
+  once<T>(event: string, callback: EventCallback<T>): Map {
+    return this._map.once(event, callback)
   }
 }

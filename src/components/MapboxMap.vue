@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useMap } from '../composables/useMap.ts'
 
-import type { MapMouseEvent } from 'mapbox-gl'
+import SegmentTool from './SegmentTool.vue'
 
 const mapContainer = ref<HTMLElement | null>(null)
 const { initialize, map } = useMap()
@@ -20,19 +20,13 @@ onMounted(async () => {
       console.error('Не удалось инициализировать карту:', error)
     }
   }
-
-  if (map.value) {
-    map.value.on('click', (e: MapMouseEvent) => {
-      if (map.value) {
-        map.value.addPoint(e);
-      }
-    })
-  }
 });
 </script>
 
 <template>
   <div ref="mapContainer" id="#map" class="map-container" />
+
+  <segment-tool v-if="map !== null" />
 </template>
 
 <style scoped>
