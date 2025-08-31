@@ -8,6 +8,8 @@ interface MapServiceInterface {
 
   on: <T extends null | ErrorEvent>(event: string, callback: EventCallback<T>) => void
 
+  onLayer: <T extends null | ErrorEvent>(event: string, id: string, callback: EventCallback<T>) => void
+
   off: <T extends null | ErrorEvent>(event: string, callback: EventCallback<T>) => void
 
   setCanvasStyle: (styles: Record<string, string | number>) => void

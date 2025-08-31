@@ -9,6 +9,8 @@ import { useMap } from '../composables/useMap.ts'
 import { calculateAzimuth, calculateDistance, calculateEndpoint, calculateArcPoints } from '../utils'
 import { SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID } from '../const';
 
+import SegmentInfo from './SegmentInfo.vue'
+
 const { map } = useMap()
 
 const emit = defineEmits(['segment-created']);
@@ -43,11 +45,6 @@ const startDrawing = () => {
 
   isDrawing.value = true
   isSettingSpread.value = false
-  startPoint.value = null
-  azimuthPoint.value = null
-  currentAzimuth.value = 0
-  currentDistance.value = 0
-  currentSpread.value = 0
 };
 
 const cancelDrawing = () => {
@@ -59,7 +56,7 @@ const cancelDrawing = () => {
 };
 
 const handleMapClick = (e: MapMouseEvent) => {
-  if (!map.value || !e.lngLat) return;
+  if (!map.value || !e.lngLat || !isDrawing.value) return;
 
   if (!startPoint.value) {
     startPoint.value = [e.lngLat.lng, e.lngLat.lat]
@@ -180,6 +177,11 @@ const completeSegment = () => {
 
   isDrawing.value = false
   isSettingSpread.value = false
+  startPoint.value = null
+  azimuthPoint.value = null
+  currentAzimuth.value = 0
+  currentDistance.value = 0
+  currentSpread.value = 0
 
   if (map.value) {
     map.value.setCanvasStyle({ cursor: '' })
@@ -188,13 +190,7 @@ const completeSegment = () => {
 </script>
 
 <template>
-  <div class="segment-tool">
-    <div v-if="isDrawing" class="segment-tool__info">
-      <div>Азимут: {{ currentAzimuth }}°</div>
-      <div>Расстояние: {{ currentDistance.toFixed(2) }}м</div>
-      <div v-if="currentSpread !== 0">Створ: ±{{ currentSpread }}°</div>
-    </div>
-
+  <segment-info :segment="{ startPoint, azimuth: currentAzimuth, distance: currentDistance, spread: currentSpread }">
     <div class="segment-tool__control">
       <button class="segment-tool__button" :disabled="isDrawing" @click="startDrawing">
         Создать сегмент
@@ -203,27 +199,10 @@ const completeSegment = () => {
         Отмена
       </button>
     </div>
-  </div>
+  </segment-info>
 </template>
 
 <style scoped>
-.segment-tool {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: #FFF;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-.segment-tool__info {
-  margin-bottom: 10px;
-  padding: 5px;
-  background: #f5f5f5;
-  border-radius: 3px;
-}
-
 .segment-tool__button {
   margin-right: 5px;
   border-color: #000;

@@ -96,7 +96,7 @@ export default class MapboxService implements MapServiceInterface {
         features: spreadGeometry.map((geometry: SpreadGeometry) => ({
           type: 'Feature',
           geometry: geometry,
-          properties: {}
+          properties: geometry.properties || {},
         }))
       });
     } else if (spreadSource) {
@@ -113,6 +113,10 @@ export default class MapboxService implements MapServiceInterface {
 
   on<T>(event: string, callback: EventCallback<T>): void {
     this._map!.on(event, callback)
+  }
+
+  onLayer<T>(event: string, layerId: string, callback: EventCallback<T>): void {
+    this._map!.on(event, layerId, callback)
   }
 
   off<T>(event: string, callback: EventCallback<T>): void {
