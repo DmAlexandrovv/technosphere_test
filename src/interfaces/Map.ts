@@ -1,4 +1,5 @@
-import type { ErrorEvent, Map, AnyLayer, Source, AnySourceData } from 'mapbox-gl'
+import type { ErrorEvent, Map } from 'mapbox-gl'
+import type {SegmentGeometry, SpreadGeometry} from "./Segment.ts";
 
 type EventCallback<T> = (event: T) => void;
 
@@ -11,21 +12,16 @@ interface MapServiceInterface {
 
   setCanvasStyle: (styles: Record<string, string | number>) => void
 
-  getLayer(id: string): AnyLayer | undefined
+  cleanupDrawing: (segmentSourceId: string, spreadSourceId: string) => void
 
-  removeLayer(id: string): Map
+  updateSegmentLayer: (segmentSourceId: string, segmentGeometry: SegmentGeometry[]) => void
 
-  removeSource(id: string): Map
-
-  getSource(id: string): Source | undefined
-
-  addSource(id: string, source: AnySourceData): Map
-
-  addLayer(layer: AnyLayer, before?: string): Map
-
-  isStyleLoaded(): boolean
-
-  once: <T>(type: string, callback: EventCallback<T>) => Map
+  updateMapLayers: (
+    segmentSourceId: string,
+    spreadSourceId: string,
+    segmentGeometry: SegmentGeometry[],
+    spreadGeometry: SpreadGeometry[],
+  ) => void
 }
 
 export type { MapServiceInterface, EventCallback };

@@ -4,6 +4,7 @@ interface Segment {
   azimuth: number;
   distance: number;
   spread: number;
+  azimuthPoint: [number, number];
 }
 
 interface SegmentGeometry {

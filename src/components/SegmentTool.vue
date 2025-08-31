@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onUnmounted, onMounted } from 'vue'
 
-import type { GeoJSONSource, MapMouseEvent } from 'mapbox-gl'
+import type { MapMouseEvent } from 'mapbox-gl'
 import type { SegmentGeometry, SpreadGeometry, Segment } from '../interfaces/Segment.ts'
 
 import { useMap } from '../composables/useMap.ts'
@@ -23,19 +23,15 @@ const currentSpread = ref(0);
 const currentMousePosition = ref<[number, number] | null>(null);
 
 onMounted(() => {
-  if (map.value) {
-    map.value.on('click', handleMapClick);
-    map.value.on('mousemove', handleMouseMove);
-  }
+  map.value?.on('click', handleMapClick);
+  map.value?.on('mousemove', handleMouseMove);
 })
 
 onUnmounted(() => {
-  cleanupDrawing();
+  map.value?.cleanupDrawing(SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
 
-  if (map.value) {
-    map.value.off('click', handleMapClick);
-    map.value.off('mousemove', handleMouseMove);
-  }
+  map.value?.off('click', handleMapClick);
+  map.value?.off('mousemove', handleMouseMove);
 });
 
 const startDrawing = () => {
@@ -43,11 +39,10 @@ const startDrawing = () => {
     return
   }
 
-  isDrawing.value = true
-  isSettingSpread.value = false
-
   map.value.setCanvasStyle({ cursor: 'crosshair' })
 
+  isDrawing.value = true
+  isSettingSpread.value = false
   startPoint.value = null
   azimuthPoint.value = null
   currentAzimuth.value = 0
@@ -56,36 +51,11 @@ const startDrawing = () => {
 };
 
 const cancelDrawing = () => {
-  cleanupDrawing();
+  map.value?.cleanupDrawing(SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
+  map.value?.setCanvasStyle({ cursor: '' });
 
   isDrawing.value = false;
   isSettingSpread.value = false;
-
-  if (map.value) {
-    map.value.setCanvasStyle({ cursor: '' });
-  }
-};
-
-const cleanupDrawing = () => {
-  if (!map.value) return;
-
-  const segmentSource = map.value.getSource(SEGMENT_TEMP_SOURCE_ID) as GeoJSONSource
-
-  if (segmentSource) {
-    segmentSource.setData({
-      type: 'FeatureCollection',
-      features: []
-    });
-  }
-
-  const spreadSource = map.value.getSource(SPREAD_TEMP_SOURCE_ID) as GeoJSONSource
-
-  if (spreadSource) {
-    spreadSource.setData({
-      type: 'FeatureCollection',
-      features: []
-    });
-  }
 };
 
 const handleMapClick = (e: MapMouseEvent) => {
@@ -142,7 +112,7 @@ const updateAzimuthVisualization = () => {
     coordinates: [startPoint.value, endPoint]
   };
 
-  updateSegmentLayer(segmentGeometry);
+  map.value?.updateSegmentLayer(SEGMENT_TEMP_SOURCE_ID, [segmentGeometry])
 };
 
 const updateSpread = () => {
@@ -173,64 +143,23 @@ const updateSpreadVisualization = () => {
     coordinates: [startPoint.value, endPoint]
   };
 
-  let spreadGeometry: SpreadGeometry | null = null;
+  const spreadAngle = Math.abs(currentSpread.value);
+  const startAngle = baseAzimuth - spreadAngle;
+  const endAngle = baseAzimuth + spreadAngle;
+  const arcPoints = calculateArcPoints(startPoint.value, distance, startAngle, endAngle);
+  const allPoints = [startPoint.value, ...arcPoints, startPoint.value];
 
-  if (currentSpread.value !== 0) {
-    const spreadAngle = Math.abs(currentSpread.value);
-    const startAngle = baseAzimuth - spreadAngle;
-    const endAngle = baseAzimuth + spreadAngle;
+  const spreadGeometry: SpreadGeometry = {
+    type: 'Polygon',
+    coordinates: [allPoints]
+  };
 
-    const arcPoints = calculateArcPoints(startPoint.value, distance, startAngle, endAngle);
-    const allPoints = [startPoint.value, ...arcPoints, startPoint.value];
-
-    spreadGeometry = {
-      type: 'Polygon',
-      coordinates: [allPoints]
-    };
-  }
-
-  updateMapLayers(segmentGeometry, spreadGeometry);
-};
-
-const updateSegmentLayer = (segmentGeometry: SegmentGeometry) => {
-  if (!map.value) {
-    return
-  }
-
-  const segmentSource = map.value.getSource(SEGMENT_TEMP_SOURCE_ID) as GeoJSONSource;
-
-  if (segmentSource) {
-    segmentSource.setData({
-      type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        geometry: segmentGeometry,
-        properties: {}
-      }]
-    });
-  }
-};
-
-const updateMapLayers = (segmentGeometry: SegmentGeometry, spreadGeometry: SpreadGeometry | null) => {
-  updateSegmentLayer(segmentGeometry);
-
-  const spreadSource = map.value?.getSource(SPREAD_TEMP_SOURCE_ID) as GeoJSONSource;
-
-  if (spreadGeometry && spreadSource) {
-    spreadSource.setData({
-      type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        geometry: spreadGeometry,
-        properties: {}
-      }]
-    });
-  } else if (spreadSource) {
-    spreadSource.setData({
-      type: 'FeatureCollection',
-      features: []
-    });
-  }
+  map.value?.updateMapLayers(
+    SEGMENT_TEMP_SOURCE_ID,
+    SPREAD_TEMP_SOURCE_ID,
+    [segmentGeometry],
+    [spreadGeometry],
+  )
 };
 
 const completeSegment = () => {
@@ -241,12 +170,13 @@ const completeSegment = () => {
     startPoint: startPoint.value,
     azimuth: currentAzimuth.value,
     distance: currentDistance.value,
-    spread: Math.abs(currentSpread.value)
+    spread: Math.abs(currentSpread.value),
+    azimuthPoint: azimuthPoint.value,
   };
 
   emit('segment-created', segment);
 
-  cleanupDrawing()
+  map.value?.cleanupDrawing(SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
 
   isDrawing.value = false
   isSettingSpread.value = false
