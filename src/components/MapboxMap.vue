@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
-import {useMap} from '../composables/useMap.ts'
+import { onMounted, ref } from 'vue'
+import { useMap } from '../composables/useMap.ts'
 
-import type {MapMouseEvent} from 'mapbox-gl'
-import type {Segment, SegmentGeometry, SpreadGeometry} from '../interfaces/Segment.ts'
+import type { MapMouseEvent } from 'mapbox-gl'
+import type { Segment, SegmentGeometry, SpreadGeometry } from '../interfaces/Segment.ts'
 
-import {AZIMUTH_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID} from '../const'
-import {calculateArcPoints, calculateAzimuth, calculateEndpoint} from '../utils'
+import { AZIMUTH_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID } from '../const'
+import { calculateArcPoints, calculateAzimuth, calculateEndpoint } from '../utils'
 
 import SegmentTool from './SegmentTool.vue'
 import SegmentEditor from './SegmentEditor.vue'
