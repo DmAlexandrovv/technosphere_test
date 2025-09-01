@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onUnmounted, onMounted } from 'vue'
+import { ref, onUnmounted, onMounted, watch } from 'vue'
 
+import type { PropType } from "vue";
 import type { MapMouseEvent } from 'mapbox-gl'
 import type { SegmentGeometry, SpreadGeometry, Segment } from '../interfaces/Segment.ts'
 
@@ -13,6 +14,12 @@ import SegmentInfo from './SegmentInfo.vue'
 
 const { map } = useMap()
 
+const { segmentToEdit } = defineProps({
+  segmentToEdit: {
+    type: Object as PropType<Segment>,
+    default: null,
+  }
+})
 const emit = defineEmits(['segment-created']);
 
 const isDrawing = ref(false);
@@ -23,6 +30,7 @@ const currentAzimuth = ref(0);
 const currentDistance = ref(0);
 const currentSpread = ref(0);
 const currentMousePosition = ref<[number, number] | null>(null);
+const isEditMode = ref(false);
 
 onMounted(() => {
   map.value?.on('click', handleMapClick);
@@ -35,6 +43,19 @@ onUnmounted(() => {
   map.value?.off('click', handleMapClick);
   map.value?.off('mousemove', handleMouseMove);
 });
+
+watch(() => segmentToEdit, (segment: Segment) => {
+  if (segment) {
+    isDrawing.value = true
+    isSettingSpread.value = false
+    startPoint.value = segment.startPoint
+    azimuthPoint.value = null
+    currentAzimuth.value = 0
+    currentDistance.value = 0
+    currentSpread.value = 0
+    isEditMode.value = true
+  }
+}, { deep: true })
 
 const startDrawing = () => {
   if (!map.value) {
@@ -171,7 +192,10 @@ const completeSegment = () => {
     azimuthPoint: azimuthPoint.value,
   };
 
-  emit('segment-created', segment);
+  emit('segment-created', {
+    segment,
+    isEditMode: isEditMode.value,
+  });
 
   map.value?.cleanupDrawing(SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
 
@@ -182,6 +206,7 @@ const completeSegment = () => {
   currentAzimuth.value = 0
   currentDistance.value = 0
   currentSpread.value = 0
+  isEditMode.value = false
 
   if (map.value) {
     map.value.setCanvasStyle({ cursor: '' })

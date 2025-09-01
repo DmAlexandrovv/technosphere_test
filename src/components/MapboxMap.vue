@@ -14,6 +14,7 @@ import SegmentEditor from './SegmentEditor.vue';
 const mapContainer = ref<HTMLElement | null>(null)
 const segments = ref<Segment[]>([])
 const selectedSegment = ref<Segment | null>(null)
+const segmentToEdit = ref<Segment | null>(null)
 
 const { initialize, map } = useMap()
 
@@ -97,8 +98,17 @@ const rerenderLayer = () => {
   )
 }
 
-const createSegment = (item: Segment) => {
-  segments.value.push(item)
+const createSegment = ({ segment, isEditMode }: { segment: Segment, isEditMode: boolean }) => {
+  if (isEditMode) {
+    segments.value = segments.value.filter(({ id }) => id !== segmentToEdit.value?.id)
+
+    segmentToEdit.value = null
+    selectedSegment.value = segment
+
+    map.value?.highlightSegment(calcSpreadGeometry(selectedSegment.value))
+  }
+
+  segments.value.push(segment)
 
   rerenderLayer()
 }
@@ -117,17 +127,26 @@ const handleCloseInfo = () => {
 
   map.value?.removeHighlightSegment()
 }
+
+const handleEdit = () => {
+  segmentToEdit.value = selectedSegment.value
+}
 </script>
 
 <template>
   <div ref="mapContainer" id="#map" class="map-container" />
 
-  <segment-tool v-if="map !== null" @segment-created="createSegment" />
+  <segment-tool
+    v-if="map !== null"
+    :segment-to-edit="segmentToEdit as Segment"
+    @segment-created="createSegment"
+  />
   <segment-editor
-    v-if="selectedSegment"
+    v-if="selectedSegment && !segmentToEdit"
     :segment="selectedSegment"
     @delete="handleDeleteSegment"
     @close="handleCloseInfo"
+    @edit="handleEdit"
   />
 </template>
 

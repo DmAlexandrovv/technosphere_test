@@ -4,7 +4,7 @@ import type { SegmentPanelProps } from '../interfaces/Segment.ts'
 
 import SegmentInfo from './SegmentInfo.vue'
 
-defineEmits(['delete'])
+defineEmits(['delete', 'close', 'edit'])
 
 const { segment } = defineProps({
   segment: {
@@ -21,6 +21,9 @@ const { segment } = defineProps({
     </button>
     <button class="segment-tool__button" @click="$emit('close')">
       Закрыть
+    </button>
+    <button class="segment-tool__button" @click="$emit('edit')">
+      Редактировать
     </button>
   </segment-info>
 </template>
