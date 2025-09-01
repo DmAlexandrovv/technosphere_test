@@ -80,23 +80,16 @@ export default class MapboxService implements MapServiceInterface {
     }
   }
 
-  public cleanupDrawing(segmentSourceId: string, spreadSourceId: string): void {
-    const segmentSource = this._map.getSource(segmentSourceId) as GeoJSONSource
+  public cleanupDrawing(layerIds: string[]): void {
+    for (const id of layerIds) {
+      const source = this._map.getSource(id) as GeoJSONSource
 
-    if (segmentSource) {
-      segmentSource.setData({
-        type: 'FeatureCollection',
-        features: []
-      })
-    }
-
-    const spreadSource = this._map.getSource(spreadSourceId) as GeoJSONSource
-
-    if (spreadSource) {
-      spreadSource.setData({
-        type: 'FeatureCollection',
-        features: []
-      })
+      if (source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: []
+        })
+      }
     }
   }
 

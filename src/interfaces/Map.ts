@@ -14,7 +14,7 @@ interface MapServiceInterface {
 
   setCanvasStyle: (styles: Record<string, string | number>) => void
 
-  cleanupDrawing: (segmentSourceId: string, spreadSourceId: string) => void
+  cleanupDrawing: (ids: string[]) => void
 
   updateSegmentLayer: (segmentSourceId: string, segmentGeometry: SegmentGeometry[]) => void
 

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+import {onMounted, ref} from 'vue'
 import {useMap} from '../composables/useMap.ts'
 
-import type {MapMouseEvent} from 'mapbox-gl';
+import type {MapMouseEvent} from 'mapbox-gl'
 import type {Segment, SegmentGeometry, SpreadGeometry} from '../interfaces/Segment.ts'
 
-import {AZIMUTH_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID} from '../const';
-import {calculateArcPoints, calculateAzimuth, calculateEndpoint} from '../utils';
+import {AZIMUTH_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID} from '../const'
+import {calculateArcPoints, calculateAzimuth, calculateEndpoint} from '../utils'
 
 import SegmentTool from './SegmentTool.vue'
-import SegmentEditor from './SegmentEditor.vue';
+import SegmentEditor from './SegmentEditor.vue'
 
 const mapContainer = ref<HTMLElement | null>(null)
 const segments = ref<Segment[]>([])
@@ -29,16 +29,16 @@ onMounted(async () => {
       }).then(() => {
         map.value?.onLayer('mouseenter', SPREAD_LAYER_ID, () => {
           map.value?.setCanvasStyle({ cursor: 'pointer' })
-        });
+        })
 
         map.value?.onLayer('mouseleave', SPREAD_LAYER_ID, () => {
           map.value?.setCanvasStyle({ cursor: '' })
-        });
+        })
 
         map.value?.onLayer('click', SPREAD_LAYER_ID, (e: MapMouseEvent) => {
           const features = map.value?.map.queryRenderedFeatures(e.point, {
             layers: [SPREAD_LAYER_ID]
-          });
+          })
 
           const currentId = features && features[0]?.properties?.id
 
@@ -49,13 +49,13 @@ onMounted(async () => {
           if (selectedSegment.value) {
             map.value?.highlightSegment(calcSpreadGeometry(selectedSegment.value))
           }
-        });
+        })
       })
     } catch (error) {
       console.error('Не удалось инициализировать карту:', error)
     }
   }
-});
+})
 
 const calcSpreadGeometry = (segment: Segment): SpreadGeometry => {
   const baseAzimuth = calculateAzimuth(segment.startPoint, segment.azimuthPoint)
@@ -77,11 +77,11 @@ const calcSpreadGeometry = (segment: Segment): SpreadGeometry => {
 const rerenderLayer = () => {
   const { segmentGeometry, spreadGeometry } = segments.value
     .reduce((acc: { segmentGeometry: SegmentGeometry[], spreadGeometry: SpreadGeometry[] }, segment: Segment) => {
-      const endPoint = calculateEndpoint(segment.startPoint, segment.azimuth, segment.distance);
+      const endPoint = calculateEndpoint(segment.startPoint, segment.azimuth, segment.distance)
       const segmentGeometry: SegmentGeometry = {
         type: 'LineString',
         coordinates: [segment.startPoint, endPoint],
-      };
+      }
       const spreadGeometry: SpreadGeometry = calcSpreadGeometry(segment)
 
       return {

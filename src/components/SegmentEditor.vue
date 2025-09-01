@@ -11,7 +11,7 @@ const { segment } = defineProps({
     type: Object as PropType<SegmentPanelProps>,
     required: true
   }
-});
+})
 </script>
 
 <template>

@@ -7,15 +7,15 @@ const { segment } = defineProps({
     type: Object as PropType<SegmentPanelProps>,
     required: true
   }
-});
+})
 </script>
 
 <template>
   <div class="segment-tool">
     <div class="segment-tool__info">
-      <div>Азимут: {{ segment.azimuth }}°</div>
+      <div>Азимут: {{ segment.azimuth.toFixed(2) }}°</div>
       <div>Расстояние: {{ segment.distance.toFixed(2) }}м</div>
-      <div v-if="segment.spread !== 0">Створ: ±{{ segment.spread }}°</div>
+      <div v-if="segment.spread !== 0">Створ: ±{{ segment.spread.toFixed(2) }}°</div>
     </div>
 
     <slot></slot>
