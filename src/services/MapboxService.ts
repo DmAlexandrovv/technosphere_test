@@ -1,6 +1,6 @@
-import mapboxgl, {type GeoJSONSource} from 'mapbox-gl'
+import mapboxgl from 'mapbox-gl'
 
-import type { MapboxOptions, Map } from 'mapbox-gl'
+import type { MapboxOptions, Map, GeoJSONSource } from 'mapbox-gl'
 import type { MapServiceInterface, EventCallback } from '../interfaces/Map.ts'
 
 import {
@@ -26,10 +26,10 @@ export default class MapboxService implements MapServiceInterface {
         center: [37.6173, 55.7558],
         zoom: 10,
         ...options
-      });
+      })
 
       this._map.on('load', () => {
-        this._initializeSourcesAndLayers();
+        this._initializeSourcesAndLayers()
       })
     } catch (error) {
       console.error('Не удалось создать экземпляр mapbox-gl')
@@ -55,7 +55,7 @@ export default class MapboxService implements MapServiceInterface {
   public highlightSegment(spreadGeometry: SpreadGeometry) {
     this.removeHighlightSegment()
 
-    const highlightSource = this._map.getSource(SPREAD_HIGHLIGHT_SOURCE_ID) as GeoJSONSource;
+    const highlightSource = this._map.getSource(SPREAD_HIGHLIGHT_SOURCE_ID) as GeoJSONSource
 
     if (highlightSource) {
       highlightSource.setData({
@@ -65,18 +65,18 @@ export default class MapboxService implements MapServiceInterface {
           properties: {},
           geometry: spreadGeometry
         }]
-      });
+      })
     }
   }
 
   public removeHighlightSegment() {
-    const highlightSource = this._map.getSource(SPREAD_HIGHLIGHT_SOURCE_ID) as GeoJSONSource;
+    const highlightSource = this._map.getSource(SPREAD_HIGHLIGHT_SOURCE_ID) as GeoJSONSource
 
     if (highlightSource) {
       highlightSource.setData({
         type: 'FeatureCollection',
         features: []
-      });
+      })
     }
   }
 
@@ -87,7 +87,7 @@ export default class MapboxService implements MapServiceInterface {
       segmentSource.setData({
         type: 'FeatureCollection',
         features: []
-      });
+      })
     }
 
     const spreadSource = this._map.getSource(spreadSourceId) as GeoJSONSource
@@ -96,12 +96,12 @@ export default class MapboxService implements MapServiceInterface {
       spreadSource.setData({
         type: 'FeatureCollection',
         features: []
-      });
+      })
     }
   }
 
   public updateSegmentLayer(segmentSourceId: string, segmentGeometry: SegmentGeometry[]): void {
-    const segmentSource = this._map.getSource(segmentSourceId) as GeoJSONSource;
+    const segmentSource = this._map.getSource(segmentSourceId) as GeoJSONSource
 
     if (segmentSource) {
       segmentSource.setData({
@@ -111,7 +111,7 @@ export default class MapboxService implements MapServiceInterface {
           geometry: geometry,
           properties: {}
         }))
-      });
+      })
     }
   }
 
@@ -123,7 +123,7 @@ export default class MapboxService implements MapServiceInterface {
   ): void {
     this.updateSegmentLayer(segmentSourceId, segmentGeometry)
 
-    const spreadSource = this._map.getSource(spreadSourceId) as GeoJSONSource;
+    const spreadSource = this._map.getSource(spreadSourceId) as GeoJSONSource
 
     if (spreadGeometry.length && spreadSource) {
       spreadSource.setData({
@@ -133,12 +133,12 @@ export default class MapboxService implements MapServiceInterface {
           geometry: geometry,
           properties: geometry.properties || {},
         }))
-      });
+      })
     } else if (spreadSource) {
       spreadSource.setData({
         type: 'FeatureCollection',
         features: []
-      });
+      })
     }
   }
 

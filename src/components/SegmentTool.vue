@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, onUnmounted, onMounted, watch } from 'vue'
 
-import type { PropType } from "vue";
+import type { PropType } from 'vue';
 import type { MapMouseEvent } from 'mapbox-gl'
 import type { SegmentGeometry, SpreadGeometry, Segment } from '../interfaces/Segment.ts'
 
 import { useMap } from '../composables/useMap.ts'
 
 import { calculateAzimuth, calculateDistance, calculateEndpoint, calculateArcPoints } from '../utils'
-import { SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID } from '../const';
+import { AZIMUTH_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID } from '../const';
 
 import SegmentInfo from './SegmentInfo.vue'
 
@@ -38,7 +38,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  map.value?.cleanupDrawing(SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
+  map.value?.cleanupDrawing(AZIMUTH_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
 
   map.value?.off('click', handleMapClick);
   map.value?.off('mousemove', handleMouseMove);
@@ -69,7 +69,7 @@ const startDrawing = () => {
 };
 
 const cancelDrawing = () => {
-  map.value?.cleanupDrawing(SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
+  map.value?.cleanupDrawing(AZIMUTH_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
   map.value?.setCanvasStyle({ cursor: '' });
 
   isDrawing.value = false;
@@ -130,7 +130,7 @@ const updateAzimuthVisualization = () => {
     coordinates: [startPoint.value, endPoint]
   };
 
-  map.value?.updateSegmentLayer(SEGMENT_TEMP_SOURCE_ID, [segmentGeometry])
+  map.value?.updateSegmentLayer(AZIMUTH_TEMP_SOURCE_ID, [segmentGeometry])
 };
 
 const updateSpread = () => {
@@ -173,7 +173,7 @@ const updateSpreadVisualization = () => {
   };
 
   map.value?.updateMapLayers(
-    SEGMENT_TEMP_SOURCE_ID,
+    AZIMUTH_TEMP_SOURCE_ID,
     SPREAD_TEMP_SOURCE_ID,
     [segmentGeometry],
     [spreadGeometry],
@@ -197,7 +197,7 @@ const completeSegment = () => {
     isEditMode: isEditMode.value,
   });
 
-  map.value?.cleanupDrawing(SEGMENT_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
+  map.value?.cleanupDrawing(AZIMUTH_TEMP_SOURCE_ID, SPREAD_TEMP_SOURCE_ID)
 
   isDrawing.value = false
   isSettingSpread.value = false

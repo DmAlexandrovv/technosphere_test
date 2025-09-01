@@ -1,7 +1,7 @@
 import type { ErrorEvent, Map } from 'mapbox-gl'
-import type { SegmentGeometry, SpreadGeometry } from "./Segment.ts";
+import type { SegmentGeometry, SpreadGeometry } from './Segment.ts'
 
-type EventCallback<T> = (event: T) => void;
+type EventCallback<T> = (event: T) => void
 
 interface MapServiceInterface {
   readonly map: Map

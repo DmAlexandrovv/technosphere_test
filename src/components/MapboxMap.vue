@@ -5,7 +5,7 @@ import {useMap} from '../composables/useMap.ts'
 import type {MapMouseEvent} from 'mapbox-gl';
 import type {Segment, SegmentGeometry, SpreadGeometry} from '../interfaces/Segment.ts'
 
-import {SEGMENT_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID} from '../const';
+import {AZIMUTH_SOURCE_ID, SPREAD_LAYER_ID, SPREAD_SOURCE_ID} from '../const';
 import {calculateArcPoints, calculateAzimuth, calculateEndpoint} from '../utils';
 
 import SegmentTool from './SegmentTool.vue'
@@ -91,7 +91,7 @@ const rerenderLayer = () => {
     }, { segmentGeometry: [], spreadGeometry: [] })
 
   map.value?.updateMapLayers(
-    SEGMENT_SOURCE_ID,
+    AZIMUTH_SOURCE_ID,
     SPREAD_SOURCE_ID,
     segmentGeometry,
     spreadGeometry,
