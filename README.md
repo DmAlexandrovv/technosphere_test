@@ -2,7 +2,7 @@
 
 ## Setup
 
-Node.js version: **20.15.1**. Compatibility with other Node.js versions is not guaranteed:
+Node.js version: **22.12.0**. Compatibility with other Node.js versions is not guaranteed:
 
 ```bash
 nvm install 22.12.0
