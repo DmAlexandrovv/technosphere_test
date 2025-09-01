@@ -1,5 +1,41 @@
-# Vue 3 + TypeScript + Vite
+# Minimal Starter
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Setup
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+Node.js version: **20.15.1**. Compatibility with other Node.js versions is not guaranteed:
+
+```bash
+nvm install 22.12.0
+nvm use 22.12.0
+```
+
+Make sure to install dependencies:
+
+```bash
+npm install
+```
+
+## Production
+
+Build the application for production:
+
+```bash
+npm run build
+```
+
+Locally preview production build:
+
+```bash
+npm run preview
+```
+
+Open localhost via link in terminal
+
+## Development Server
+
+```bash
+# Run DB
+npm run dev
+```
+
+Open localhost via link in terminal
