@@ -34,7 +34,6 @@ Open localhost via link in terminal
 ## Development Server
 
 ```bash
-# Run DB
 npm run dev
 ```
 
